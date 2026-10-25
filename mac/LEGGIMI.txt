@@ -1,0 +1,43 @@
+tk-iscrizioni per Mac — installazione
+====================================
+
+1. Trascina «tk-iscrizioni» sulla cartella «Applicazioni».
+2. Apri tk-iscrizioni da Applicazioni (o da Launchpad).
+
+Cosa legge
+- Solo le intestazioni delle email (mittente, oggetto, data, link di disiscrizione e l'esito della verifica
+  DKIM scritto dal tuo fornitore di posta), in sola lettura: il testo non viene mai aperto e nessuna email
+  viene segnata come letta, spostata o cancellata.
+
+Cosa resta sul Mac
+- Archivio con mittenti, oggetti e date delle email lette, note e impostazioni:
+  Libreria → Application Support → tkISCRIZIONI (la cartella tiene il nome di prima).
+- Le password delle caselle stanno nel Portachiavi del Mac.
+
+Cosa va in rete
+- Il tuo fornitore di posta, per leggere le intestazioni.
+- pietrodefilippis.it: aggiornamenti; configurazione dell'accesso a Outlook (solo per le caselle
+  Outlook/Hotmail); statistiche anonime solo se le permetti (si cambiano in Informazioni).
+- I siti dei mittenti, solo quando premi «Disiscriviti».
+
+PRIMO AVVIO
+L'app non è firmata con un certificato Apple, quindi al primo avvio macOS può bloccarla
+("impossibile verificare lo sviluppatore" oppure "l'app è danneggiata").
+
+  • Apri Impostazioni di Sistema → Privacy e sicurezza, scorri in basso e premi
+    «Apri comunque» accanto a tk-iscrizioni, poi conferma.
+
+  • In alternativa, da Terminale:
+        xattr -dr com.apple.quarantine "/Applications/tk-iscrizioni.app"
+
+Serve farlo una sola volta.
+
+Licenza
+tk-iscrizioni è software libero: GNU Affero General Public License v3.0 (AGPL-3.0), senza alcuna garanzia.
+Tutte le funzioni per tutti; una donazione è libera e non sblocca nulla.
+Codice sorgente: https://github.com/tecnikgeek-repo/tk-iscrizioni-desktop
+Licenze dei componenti: dentro l'app (Contents/Resources/licenze) e in Informazioni → Licenze e codice sorgente.
+Il nome tk-iscrizioni e il logo non sono coperti dalla licenza (AGPL sez. 7): una versione modificata deve
+avere un nome diverso.
+
+Creato da TecnikGeek — https://pietrodefilippis.it

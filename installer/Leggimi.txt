@@ -1,0 +1,45 @@
+tk-iscrizioni - a cosa sei iscritto con la tua email
+===================================================
+
+COME SI USA
+1. Estrai questa cartella dove vuoi (Documenti, Desktop, anche una pennetta USB).
+2. Doppio clic su "Avvia tk-iscrizioni.cmd" la prima volta. Al primo avvio compare nella cartella
+   l'icona "tk-iscrizioni": da lì in poi usa quella. Se sposti la cartella, riavvia dal .cmd.
+3. Premi "Aggiungi casella", scrivi la tua email e la password (per Gmail serve la "password per
+   le app": il programma ti spiega come crearla), poi "Analizza".
+
+COSA LEGGE
+- Solo le intestazioni delle email (mittente, oggetto, data, link di disiscrizione e l'esito
+  della verifica DKIM scritto dal tuo fornitore di posta), in sola lettura: il testo non viene
+  mai aperto e nessuna email viene segnata come letta, spostata o cancellata.
+- Il pulsante "Disiscriviti" usa il link del mittente solo se l'email è firmata (DKIM) dallo
+  stesso dominio del mittente; prima di aprirlo ti mostra dove porta.
+
+COSA RESTA SUL COMPUTER
+- Tutto nella cartella "Dati", accanto ad "app": l'archivio con mittenti, oggetti e date delle
+  email lette e le tue note (archivio.db), le impostazioni e le password delle caselle, cifrate
+  e valide solo per il tuo utente di Windows (su un altro PC andranno inserite di nuovo).
+- Togliendo una casella si cancellano la sua password e i suoi dati.
+- Gli aggiornamenti automatici sostituiscono solo la cartella "app": "Dati" non viene toccata.
+
+COSA VA IN RETE
+- Il tuo fornitore di posta, per leggere le intestazioni.
+- pietrodefilippis.it: controllo degli aggiornamenti; configurazione dell'accesso a Outlook
+  (solo se aggiungi una casella Outlook/Hotmail); statistiche anonime solo se le permetti
+  (nome, versione, sistema e un codice casuale, una volta al giorno; si cambiano in Informazioni).
+- I siti dei mittenti, solo quando premi "Disiscriviti".
+Le email e le password non passano da altri server.
+
+SE WINDOWS BLOCCA L'AVVIO
+Tasto destro sul file ZIP scaricato -> Proprieta' -> spunta "Sblocca" -> OK, poi estrai di nuovo.
+
+LICENZA
+tk-iscrizioni è software libero: GNU Affero General Public License v3.0 (AGPL-3.0), senza alcuna
+garanzia. Tutte le funzioni per tutti; una donazione è libera e non sblocca nulla.
+Codice sorgente: https://github.com/tecnikgeek-repo/tk-iscrizioni-desktop
+Licenze dei componenti inclusi: cartella "app\licenze" (e Informazioni -> Licenze e codice sorgente).
+Il nome tk-iscrizioni e il logo non sono coperti dalla licenza (AGPL sez. 7): una versione
+modificata deve avere un nome diverso.
+
+Sviluppato da TecnikGeek - https://pietrodefilippis.it
+Termini: https://pietrodefilippis.it/termini-e-condizioni/
