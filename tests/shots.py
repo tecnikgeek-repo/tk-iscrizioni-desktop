@@ -14,7 +14,7 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 from tkiscrizioni import URL_SORGENTE, VERSION, app as A, pro  # noqa: E402
 from tkiscrizioni.store import Store  # noqa: E402
-from tkiscrizioni.tk_licenza_qt import BenvenutoDialog, LicenzeDialog  # noqa: E402
+from tkiscrizioni.tk_licenza_qt import BenvenutoDialog, InformazioniDialog, LicenzeDialog  # noqa: E402
 from tkiscrizioni.util import Settings, cartella_licenze  # noqa: E402
 
 qa = QApplication(sys.argv)
@@ -35,7 +35,10 @@ def go():
             ("aggiungi-altro", lambda: A.AccountDialog(win, win.store), lambda d: d.email.setText("info@miaditta.it")),
             ("benvenuto", lambda: BenvenutoDialog(qa.licenza, "tk-iscrizioni", URL_SORGENTE, win, A.render_icon(104),
                                                   A.BENVENUTO_RIGHE), lambda d: None),
-            ("informazioni", lambda: A.AboutDialog(win), lambda d: None),
+            ("informazioni", lambda: InformazioniDialog(qa.licenza, "tk-iscrizioni", VERSION, "A cosa sei iscritto",
+                                                        A.render_icon(136), "#7c3aed", url_sorgente=URL_SORGENTE,
+                                                        cartella_licenze=cartella_licenze(), parent=win),
+             lambda d: None),
             ("licenze", lambda: LicenzeDialog("tk-iscrizioni", VERSION, URL_SORGENTE, cartella_licenze(), win),
              lambda d: None)):
         d = mk()

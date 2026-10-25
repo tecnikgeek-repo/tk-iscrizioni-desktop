@@ -20,11 +20,11 @@ from PySide6.QtWidgets import (
 )
 
 from tkiscrizioni import (
-    APP_TITLE, AUTHOR, AUTHOR_URL, PRIVACY_URL, TERMS_URL, URL_SORGENTE, VERSION, classify, disiscrizione, mailscan,
+    APP_TITLE, URL_SORGENTE, VERSION, classify, disiscrizione, mailscan,
     msoauth, pro, providers, updater, vault,
 )
 from tkiscrizioni.store import Store
-from tkiscrizioni.tk_licenza_qt import LicenzeDialog, dentro_lo_schermo
+from tkiscrizioni.tk_licenza_qt import dentro_lo_schermo
 from tkiscrizioni.util import (
     IS_WIN, Settings, cartella_licenze, create_desktop_shortcut, data_dir, ensure_folder_shortcut, export_dir,
     human_size, is_installed, log_dir,
@@ -506,71 +506,6 @@ BENVENUTO_RIGHE = (
     "dell'accesso a Outlook e statistiche (solo col sì qui sotto); i siti dei mittenti solo quando premi "
     "«Disiscriviti». Email e password non passano da altri server.",
 )
-
-
-class AboutDialog(TkDialog):
-    def __init__(self, win):
-        super().__init__(win, 460)
-        self.check = False
-        top = QHBoxLayout()
-        icon = QLabel()
-        icon.setPixmap(render_icon(72))
-        top.addWidget(icon)
-        top.addSpacing(10)
-        col = QVBoxLayout()
-        t = QLabel(APP_TITLE)
-        t.setStyleSheet("font-size:24px; font-weight:800; color:#fff;")
-        col.addWidget(t)
-        s = QLabel("A cosa sei iscritto con la tua email:\nservizi, account, newsletter e acquisti.")
-        s.setObjectName("asub")
-        col.addWidget(s)
-        top.addLayout(col, 1)
-        self.body.addLayout(top)
-        for title, body in (("VERSIONE", f"{VERSION} · Software libero · AGPL-3.0"),
-                            ("SVILUPPATORE", f"{AUTHOR} · {AUTHOR_URL.split('//')[1]}"),
-                            ("I TUOI DATI", html.escape(data_dir()))):
-            self.body.addWidget(_info_card(title, body))
-        stat = pro.casella_statistiche()
-        stat.setStyleSheet("QCheckBox { color:#ffffff; }")
-        self.body.addWidget(stat)
-        self.body.addWidget(text_btn("refresh", "Controlla aggiornamenti", self._check, "#fff", "accent"))
-        self.body.addWidget(text_btn("doc", "Licenze e codice sorgente", self._licenze,
-                                     tip="Licenza AGPL-3.0, componenti inclusi e link al codice sorgente"))
-        row = QHBoxLayout()
-        row.setSpacing(8)
-        caffe = pro.pulsante_caffe("ghost")  # ambra, uguale in tutti i software; None a chi ha già donato
-        if caffe is not None:
-            row.addWidget(caffe, 1)
-        if IS_WIN:
-            row.addWidget(text_btn("doc", "Icona sul Desktop", self._shortcut), 1)
-        row.addWidget(text_btn("", "Chiudi", self.accept), 1)
-        self.body.addLayout(row)
-        links = QHBoxLayout()
-        links.addStretch(1)
-        for label, url in (("Termini e condizioni", TERMS_URL), ("Privacy", PRIVACY_URL),
-                           ("Contatti", AUTHOR_URL + "/contatti/")):
-            b = QPushButton(label)
-            b.setObjectName("link")
-            b.setCursor(Qt.CursorShape.PointingHandCursor)
-            b.clicked.connect(lambda _=False, u=url: open_url(u))
-            links.addWidget(b)
-        links.addStretch(1)
-        self.body.addLayout(links)
-
-    def _shortcut(self):
-        try:
-            path = create_desktop_shortcut()
-        except Exception as exc:
-            tk_warn(self.parent(), APP_TITLE, f"Non riesco a creare l'icona sul Desktop:\n{exc}")
-            return
-        tk_info(self.parent(), APP_TITLE, f"Icona creata sul Desktop:\n{path}", "ok")
-
-    def _check(self):
-        self.check = True
-        self.accept()
-
-    def _licenze(self):
-        LicenzeDialog(APP_TITLE, VERSION, URL_SORGENTE, cartella_licenze(), self).exec()
 
 
 # ---------------------------------------------------------------- lavori in sottofondo
@@ -1755,10 +1690,24 @@ class MainWindow(QMainWindow):
 
     # ---- informazioni e aggiornamenti
     def act_about(self):
-        dlg = AboutDialog(self)
-        dlg.exec()
-        if dlg.check:
-            self.check_updates(True)
+        """Informazioni: finestra comune a tutti i software TK (libreria), colore di tk-iscrizioni."""
+        from tkiscrizioni.tk_licenza_qt import InformazioniDialog
+        InformazioniDialog(
+            pro.licenza(), APP_TITLE, VERSION, "A cosa sei iscritto con la tua email: servizi, account, newsletter "
+            "e acquisti.", render_icon(136), "#7c3aed",
+            dati=[("I tuoi dati", data_dir(), "Caselle, password cifrate e risultati restano su questo computer: "
+                                              "le email non vengono mai toccate.")],
+            url_sorgente=URL_SORGENTE, cartella_licenze=cartella_licenze(),
+            su_aggiornamenti=lambda: self.check_updates(True),
+            su_icona_desktop=self._icona_desktop if IS_WIN else None, parent=self).exec()
+
+    def _icona_desktop(self):
+        try:
+            path = create_desktop_shortcut()
+        except Exception as exc:
+            tk_warn(self, APP_TITLE, f"Non riesco a creare l'icona sul Desktop:\n{exc}")
+            return
+        tk_info(self, APP_TITLE, f"Icona creata sul Desktop:\n{path}", "ok")
 
     def show_update_button(self, version):
         self.update_btn.setVisible(bool(version))
