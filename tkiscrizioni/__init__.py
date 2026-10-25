@@ -5,7 +5,7 @@ APP_TITLE = "tk-iscrizioni"
 # Nome storico (fino alla 1.0.4): resta come identificatore interno della cartella dati su Mac, del
 # Portachiavi e della cifratura DPAPI, così archivio e password salvate restano leggibili. Non cambiarlo.
 LEGACY_TITLE = "tkISCRIZIONI"
-VERSION = "1.1.3"
+VERSION = "1.1.4"
 AUTHOR = "TecnikGeek"
 AUTHOR_URL = "https://pietrodefilippis.it"
 TERMS_URL = "https://pietrodefilippis.it/termini-e-condizioni/#software"
