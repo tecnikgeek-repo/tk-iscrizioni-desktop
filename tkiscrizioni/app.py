@@ -1905,7 +1905,8 @@ def main():
     app.licenza = pro.crea_licenza(VERSION)
     app.setApplicationName(APP_TITLE)
     app.setStyle("Fusion")
-    app.setStyleSheet(STYLE)
+    from tkiscrizioni.tk_licenza_qt import stile_caselle_globale
+    app.setStyleSheet(STYLE + stile_caselle_globale())
     import PySide6
     from PySide6.QtCore import QLibraryInfo, QTranslator
     tr = QTranslator(app)
