@@ -213,7 +213,7 @@ CATEGORIES = {
     "acquisti": ("Acquisti", "Ordini, ricevute, abbonamenti"),
     "newsletter": ("Newsletter", "Ti mandano comunicazioni o pubblicità"),
     "altro": ("Altro", "Ti hanno scritto, senza segni chiari di iscrizione"),
-    "persona": ("Persone", "Caselle di persone (Gmail, Libero…) e del tuo dominio"),
+    "persona": ("Persone", "Caselle email di persone e del tuo dominio"),
 }
 
 

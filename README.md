@@ -30,7 +30,7 @@ Siti, servizi, newsletter e negozi trovati leggendo solo le intestazioni delle e
 <td width="50%" valign="top">
 
 ### 📬&nbsp; Tutte le tue caselle
-Gmail, Outlook/Hotmail, Aruba, Libero, Virgilio, Yahoo, iCloud e ogni casella IMAP.
+Le caselle email più diffuse e ogni casella IMAP.
 
 </td>
 <td width="50%" valign="top">
@@ -64,7 +64,7 @@ Segna cosa tenere e cosa cancellare, con una nota per ogni servizio.
 <td width="50%" valign="top">
 
 ### 📊&nbsp; Esporta
-Tutto l'elenco in un file per Excel.
+Tutto l'elenco in un file per fogli di calcolo.
 
 </td>
 </tr>

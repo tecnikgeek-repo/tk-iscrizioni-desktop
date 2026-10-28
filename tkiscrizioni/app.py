@@ -1047,7 +1047,7 @@ class MainWindow(QMainWindow):
         self.scan_btn = text_btn("refresh", "Analizza", self.act_scan_all, "#fff", "accent",
                                  "Legge le email nuove di tutte le caselle")
         hl.addWidget(self.scan_btn)
-        hl.addWidget(text_btn("export", "Esporta", self.act_export, tip="Salva l'elenco in un file per Excel"))
+        hl.addWidget(text_btn("export", "Esporta", self.act_export, tip="Salva l'elenco in un file per fogli di calcolo"))
         hl.addWidget(text_btn("info", "", self.act_about, tip="Informazioni e aggiornamenti"))
         root.addWidget(header)
 
@@ -1099,7 +1099,7 @@ class MainWindow(QMainWindow):
         cl.addWidget(s)
         steps = QHBoxLayout()
         steps.setSpacing(12)
-        for n, (title, body) in enumerate((("Aggiungi la casella", "Gmail, Aruba, Libero, Virgilio, Yahoo, iCloud…"),
+        for n, (title, body) in enumerate((("Aggiungi la casella", "Funziona con le caselle email più diffuse"),
                                            ("Analizza", "Solo le intestazioni, sul tuo computer"),
                                            ("Fai pulizia", "Disiscriviti o cancella gli account che non usi")), 1):
             f = QFrame(objectName="acct")
@@ -1187,7 +1187,7 @@ class MainWindow(QMainWindow):
             grid2.addWidget(b, i // 2, i % 2)
         fcard.lay.addLayout(grid2)
         self.people = QCheckBox("Mostra anche le persone")
-        self.people.setToolTip("Mittenti con caselle personali (Gmail, Libero…) e del tuo stesso dominio")
+        self.people.setToolTip("Mittenti con caselle email personali e del tuo stesso dominio")
         self.people.toggled.connect(self._filter_changed)
         fcard.lay.addWidget(self.people)
         left.addWidget(fcard)
@@ -1565,7 +1565,7 @@ class MainWindow(QMainWindow):
         if https and r["unsub_post"]:
             if tk_choice(self, f"Disiscriverti da {r['name']}?",
                          "Chiedo al mittente di toglierti dalla sua lista con la disiscrizione in un clic, "
-                         "lo standard che usano Gmail e Outlook. Il tuo account, se c'è, non viene cancellato.\n\n"
+                         "lo standard delle caselle email più diffuse. Il tuo account, se c'è, non viene cancellato.\n\n"
                          + self._avviso_link(https, r), [("Annulla", "ghost"), ("Disiscrivimi", "accent")]) != 1:
                 return
             self._one_click(r, https)
@@ -1649,7 +1649,7 @@ class MainWindow(QMainWindow):
         if not path:
             path, _ = QFileDialog.getSaveFileName(self, "Esporta l'elenco",
                                                   os.path.join(export_dir(), f"iscrizioni-{time.strftime('%Y-%m-%d')}.csv"),
-                                                  "File per Excel (*.csv)")
+                                                  "File per fogli di calcolo (*.csv)")
             if not path:
                 return
         accs = {a["id"]: a["email"] for a in self.store.accounts()}
