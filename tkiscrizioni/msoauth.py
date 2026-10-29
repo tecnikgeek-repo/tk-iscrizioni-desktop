@@ -15,7 +15,7 @@ import urllib.parse
 import urllib.request
 import webbrowser
 
-from tkiscrizioni import VERSION
+from tkiscrizioni import VERSION, tk_linux
 
 CONFIG_URL = "https://pietrodefilippis.it/updates/tk-iscrizioni-config.json"
 SCOPE = "https://outlook.office.com/IMAP.AccessAsUser.All offline_access"
@@ -97,7 +97,11 @@ def login(client_id, tenant="common", login_hint="", timeout=300, cancelled=None
               "prompt": "select_account"}
     if login_hint:
         params["login_hint"] = login_hint
-    webbrowser.open(AUTH.format(tenant=tenant) + "?" + urllib.parse.urlencode(params))
+    url = AUTH.format(tenant=tenant) + "?" + urllib.parse.urlencode(params)
+    if tk_linux.IS_LINUX:
+        tk_linux.apri(url)  # xdg-open con l'ambiente pulito: il browser non deve caricare le librerie del pacchetto
+    else:
+        webbrowser.open(url)
     end = time.time() + timeout
     try:
         while not result and time.time() < end:

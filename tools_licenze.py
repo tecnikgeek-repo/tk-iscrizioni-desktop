@@ -1,7 +1,8 @@
 """Prepara la cartella «licenze» del pacchetto: AGPL di tk-iscrizioni, testi delle licenze dei componenti
-inclusi DAVVERO (Python, Qt/PySide6, certifi; su Mac anche il lanciatore di PyInstaller) e COMPONENTI.txt
-con versioni e dove si scarica il sorgente. Da eseguire col Python della build (venv), che conosce le
-versioni installate.  Uso: python tools_licenze.py <cartella di destinazione> windows|mac"""
+inclusi DAVVERO (Python, Qt/PySide6, certifi; su Mac e Linux anche il lanciatore di PyInstaller; su Linux
+anche secretstorage, jeepney e libxcb-cursor) e COMPONENTI.txt con versioni e dove si scarica il sorgente.
+Da eseguire col Python della build (venv), che conosce le versioni installate.
+Uso: python tools_licenze.py <cartella di destinazione> windows|mac|linux"""
 import glob
 import os
 import shutil
@@ -53,6 +54,19 @@ def main(dest, piattaforma):
     cert = licenza_dist_info("certifi")
     if cert:
         shutil.copy(cert, os.path.join(dest, "certifi-LICENSE.txt"))
+    if piattaforma == "linux":
+        for pkg in ("secretstorage", "jeepney"):
+            lic = licenza_dist_info(pkg)
+            if lic:
+                shutil.copy(lic, os.path.join(dest, f"{pkg}-LICENSE.txt"))
+        # Python di sistema/setup-python senza LICENSE.txt: il copyright del pacchetto Debian/Ubuntu
+        deb = f"/usr/share/doc/python{sys.version_info[0]}.{sys.version_info[1]}/copyright"
+        if not py and os.path.isfile(deb):
+            shutil.copy(deb, os.path.join(dest, "Python-PSF.txt"))
+        # libxcb-cursor (MIT/X11), presa dal pacchetto Ubuntu da linux/build_linux.sh
+        xcb = os.path.join(ROOT, "build", "xcb-cursor", "copyright")
+        if os.path.isfile(xcb):
+            shutil.copy(xcb, os.path.join(dest, "libxcb-cursor-LICENSE.txt"))
     pyside = versione("PySide6_Essentials")
     if pyside == "?":
         pyside = versione("PySide6")
@@ -86,7 +100,25 @@ def main(dest, piattaforma):
             "Microsoft Visual C++ Runtime (vcruntime140.dll, msvcp140.dll…, inclusi con Python e PySide6)",
             "  Ridistribuibile secondo le condizioni di Microsoft Visual C++ Redistributable.",
         ]
-    else:
+    if piattaforma == "linux":
+        righe += [
+            "",
+            f"SecretStorage {versione('secretstorage')} (solo Linux: portachiavi del sistema)",
+            "  Licenza: BSD-3-Clause (secretstorage-LICENSE.txt)",
+            "  Sorgente: https://github.com/mitya57/secretstorage e https://pypi.org/project/SecretStorage/",
+            "",
+            f"jeepney {versione('jeepney')} (solo Linux: collegamento D-Bus al portachiavi)",
+            "  Licenza: MIT (jeepney-LICENSE.txt)",
+            "  Sorgente: https://gitlab.com/takluyver/jeepney e https://pypi.org/project/jeepney/",
+            "",
+            "libxcb-cursor 0.1 (solo Linux, serve a Qt sotto X11)",
+            "  Licenza: MIT/X11 (libxcb-cursor-LICENSE.txt)",
+            "  Sorgente: https://gitlab.freedesktop.org/xorg/lib/libxcb-cursor",
+            "",
+            "Su Linux le librerie Qt sono dentro il file AppImage: si estrae con",
+            "«tk-iscrizioni-….AppImage --appimage-extract» (cartella usr/lib/tk-iscrizioni/_internal).",
+        ]
+    if piattaforma != "windows":
         righe += [
             "",
             f"PyInstaller {versione('pyinstaller')} (solo il lanciatore dell'app)",
@@ -101,6 +133,6 @@ def main(dest, piattaforma):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3 or sys.argv[2] not in ("windows", "mac"):
-        sys.exit("uso: python tools_licenze.py <cartella> windows|mac")
+    if len(sys.argv) != 3 or sys.argv[2] not in ("windows", "mac", "linux"):
+        sys.exit("uso: python tools_licenze.py <cartella> windows|mac|linux")
     main(sys.argv[1], sys.argv[2])

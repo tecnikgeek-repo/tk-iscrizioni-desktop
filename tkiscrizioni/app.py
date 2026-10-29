@@ -8,7 +8,8 @@ import time
 import urllib.parse
 
 from PySide6.QtCore import (
-    QAbstractTableModel, QModelIndex, QPointF, QRectF, QSize, QSortFilterProxyModel, Qt, QThread, QTimer, QUrl, Signal,
+    QAbstractTableModel, QModelIndex, QObject, QPointF, QRectF, QSize, QSortFilterProxyModel, Qt, QThread, QTimer, QUrl,
+    Signal, Slot,
 )
 from PySide6.QtGui import (
     QBrush, QColor, QDesktopServices, QFont, QIcon, QImage, QLinearGradient, QPainter, QPainterPath, QPen, QPixmap,
@@ -25,8 +26,9 @@ from tkiscrizioni import (
 )
 from tkiscrizioni.store import Store
 from tkiscrizioni.tk_licenza_qt import dentro_lo_schermo
+from tkiscrizioni import tk_linux
 from tkiscrizioni.util import (
-    IS_WIN, Settings, cartella_licenze, create_desktop_shortcut, data_dir, ensure_folder_shortcut, export_dir,
+    IS_LINUX, IS_WIN, VAULT_NAME, Settings, cartella_licenze, create_desktop_shortcut, data_dir, ensure_folder_shortcut, export_dir,
     human_size, is_installed, log_dir,
 )
 
@@ -290,6 +292,26 @@ def fmt_date(ts, with_time=False):
 
 def open_url(url):
     QDesktopServices.openUrl(QUrl(url))
+
+
+class _ApriConIlSistema(QObject):
+    """Linux: i link (browser, posta, cartelle) si aprono con xdg-open con l'ambiente pulito. Qt passerebbe al
+    browser le variabili del pacchetto (librerie Qt incluse) e il browser potrebbe non partire. Vale per tutte le
+    chiamate a QDesktopServices.openUrl, anche quelle della libreria comune (Informazioni, caffè)."""
+
+    @Slot(QUrl)
+    def apri(self, url):
+        tk_linux.apri(url.toString())
+
+
+def _salva_password(dialog, email, segreto):
+    """Salva nel portachiavi/cifrato; se non riesce lo dice nella finestra invece di bloccarla."""
+    try:
+        vault.set_secret(email, segreto)
+        return True
+    except (OSError, ValueError) as exc:
+        dialog._fail(f"Non riesco a salvare la password nel {VAULT_NAME}: {exc}")
+        return False
 
 
 def cella_csv(valore):
@@ -792,7 +814,8 @@ class AccountDialog(TkDialog):
             return fl
 
         def ok(_fl):
-            vault.set_secret(e, pw.replace(" ", "") if key == "gmail" else pw)
+            if not _salva_password(self, e, pw.replace(" ", "") if key == "gmail" else pw):
+                return
             self.store.add_account(e, key, host, port, "password")
             self.accept()
 
@@ -825,7 +848,8 @@ class AccountDialog(TkDialog):
             return tok
 
         def ok(tok):
-            vault.set_secret(e, json.dumps(tok))
+            if not _salva_password(self, e, json.dumps(tok)):
+                return
             self.store.add_account(e, "outlook", "outlook.office365.com", 993, "oauth_ms")
             self.accept()
 
@@ -1668,9 +1692,20 @@ class MainWindow(QMainWindow):
 
     def ensure_shortcut(self):
         from tkiscrizioni.util import APP_ROOT
+        import threading
+        if IS_LINUX and is_installed():
+            # voce nel menu delle applicazioni con l'icona (si corregge da sola se l'AppImage è stato spostato)
+            from tkiscrizioni.util import install_linux_menu
+
+            def menu():
+                try:
+                    install_linux_menu()
+                except Exception:
+                    pass
+            threading.Thread(target=menu, daemon=True).start()
+            return
         if not IS_WIN or not is_installed():
             return
-        import threading
         from tkiscrizioni.util import migrate_legacy_names
         need_lnk = self.settings.value("lnk_root", "") != APP_ROOT
 
@@ -1841,18 +1876,46 @@ def cli_update_test(argv):
         return 1
 
 
+def cli_vault_test(out):
+    """Prova del portachiavi dal pacchetto (build Linux): scrive, rilegge (anche un token lungo come quelli di
+    Outlook) e cancella una voce di un servizio di prova, mai quello vero. Il risultato va nel file «out»."""
+    vault.LINUX_SERVICE = "tk-iscrizioni-selftest"
+    try:
+        vault.set_secret("prova@esempio.it", "pàssword di prova")
+        ok = vault.get_secret("prova@esempio.it") == "pàssword di prova"
+        lungo = json.dumps({"access_token": "é" * 4000, "refresh_token": "r" * 2000})
+        vault.set_secret("prova@esempio.it", lungo)
+        ok = ok and vault.get_secret("prova@esempio.it") == lungo
+        vault.delete_secret("prova@esempio.it")
+        res = "OK portachiavi" if ok and vault.get_secret("prova@esempio.it") is None else "ERRORE lettura diversa"
+    except Exception as exc:  # noqa: BLE001
+        res = f"ERRORE {exc}"
+    with open(out, "w", encoding="utf-8") as fh:
+        fh.write(res)
+    return 0 if res.startswith("OK") else 1
+
+
 def main():
     argv = sys.argv[1:]
     if "--update-test" in argv:
         sys.exit(cli_update_test(argv))
+    if "--vault-test" in argv:
+        sys.exit(cli_vault_test(argv[argv.index("--vault-test") + 1]))
     selftest = argv[argv.index("--selftest") + 1] if "--selftest" in argv else ""
     if selftest:
         import tempfile
         os.environ["TKISCR_DATA"] = tempfile.mkdtemp(prefix="tkiscr-selftest-")
+        vault.LINUX_SERVICE = "tk-iscrizioni-selftest"
     app = QApplication(sys.argv)
     # licenza prima della finestra: consenso alle statistiche, benvenuto e invito al caffè (niente Pro)
     app.licenza = pro.crea_licenza(VERSION)
     app.setApplicationName(APP_TITLE)
+    if IS_LINUX:
+        from tkiscrizioni.util import LINUX_DESKTOP_ID
+        app.setDesktopFileName(LINUX_DESKTOP_ID)  # Wayland: la barra delle applicazioni trova l'icona dal .desktop
+        app.apri_link = _ApriConIlSistema(app)
+        for schema in ("http", "https", "mailto", "file"):
+            QDesktopServices.setUrlHandler(schema, app.apri_link, "apri")
     app.setStyle("Fusion")
     from tkiscrizioni.tk_licenza_qt import stile_caselle_globale
     app.setStyleSheet(STYLE + stile_caselle_globale())

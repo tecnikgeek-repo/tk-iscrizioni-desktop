@@ -9,6 +9,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "tests"))
 os.environ["TKISCR_DATA"] = tempfile.mkdtemp(prefix="tkiscr-ui-")
+os.environ["TKISCR_VAULT_SERVICE"] = "tk-iscrizioni-test"  # Linux: portachiavi, voci di prova (mai quelle vere)
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import fake_imap  # noqa: E402
@@ -129,6 +130,7 @@ A.tk_choice = lambda *a, **k: 1
 win.act_remove(a)
 check(len(store.accounts()) == 1 and vault.get_secret("sbagliata@esempio-ditta.it") is None,
       "casella tolta insieme alla sua password")
+vault.purge_service()  # Linux: via le voci di prova dal portachiavi
 srv.shutdown()
 print("\n" + ("TUTTO OK" if not fails else f"{len(fails)} TEST FALLITI"))
 sys.exit(1 if fails else 0)

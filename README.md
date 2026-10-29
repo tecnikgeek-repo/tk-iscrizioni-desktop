@@ -88,7 +88,7 @@ tk-iscrizioni legge **solo le intestazioni** (mittente, oggetto, data), **in sol
 | Resta sul tuo computer | Va in rete (e perché) |
 |---|---|
 | Email, oggetti e risultati | Il tuo fornitore di posta (per leggere le intestazioni) |
-| Password, cifrate (Windows DPAPI / Portachiavi del Mac) | pietrodefilippis.it per gli aggiornamenti e la configurazione dell'accesso Outlook |
+| Password, cifrate (Windows DPAPI / Portachiavi del Mac / portachiavi di Linux) | pietrodefilippis.it per gli aggiornamenti e la configurazione dell'accesso Outlook |
 | Le tue note e scelte | Il sito del mittente, solo quando premi «Disiscriviti» |
 
 Nessuna pubblicità, nessun account da creare. Le statistiche anonime partono **solo se le accetti** al primo avvio
@@ -99,6 +99,7 @@ pubblicati dall'autore.
 
 - **Windows 10 / 11** — scarica l'installer `.exe` e avvialo. Non servono i permessi di amministratore.
 - **macOS** (Intel o Apple Silicon) — apri il `.dmg` e trascina l'app in *Applicazioni*. Al primo avvio: clic destro sull'app → *Apri*.
+- **Linux** (Ubuntu 22.04 o più recente, x86_64) — scarica il file `.AppImage`, rendilo avviabile (*Proprietà → Esegui come programma*) e aprilo: si aggiunge da solo al menu delle applicazioni.
 
 Gli aggiornamenti arrivano da soli: quando esce una versione nuova il programma te lo propone.
 
@@ -115,8 +116,10 @@ python -m venv .venv
 .venv\Scripts\python run.py
 ```
 
+Su Linux: `.venv/bin/python -m pip install pyside6-essentials certifi secretstorage` (portachiavi del sistema).
+
 Prove con un finto server di posta, senza rete: `python tests/test_core.py` e `python tests/test_ui_scan.py`.
-Pacchetti: `installer\build.ps1` (Windows), `mac/build_mac.sh` (macOS).
+Pacchetti: `installer\build.ps1` (Windows), `mac/build_mac.sh` (macOS), `linux/build_linux.sh` (Linux).
 
 </details>
 

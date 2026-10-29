@@ -1,0 +1,41 @@
+tk-iscrizioni per Linux — installazione
+=======================================
+
+Funziona su Ubuntu 22.04 o più recente (e sulle distribuzioni simili), computer a 64 bit (x86_64).
+
+1. Scarica il file «tk-iscrizioni-<versione>-linux-x86_64.AppImage» e mettilo dove vuoi tenerlo,
+   per esempio nella cartella «Applicazioni» della tua home.
+2. Rendilo avviabile: tasto destro sul file → Proprietà → attiva «Esegui come programma»
+   (oppure da Terminale: chmod +x tk-iscrizioni-*.AppImage).
+3. Aprilo con un doppio clic. Al primo avvio tk-iscrizioni si aggiunge da solo al menu delle applicazioni,
+   con la sua icona: dalla volta dopo lo trovi lì.
+
+Se non si apre e il Terminale dice che manca FUSE: sudo apt install fuse3 (su Ubuntu c'è già).
+
+Cosa legge
+- Solo le intestazioni delle email (mittente, oggetto, data, link di disiscrizione e l'esito della verifica
+  DKIM scritto dal tuo fornitore di posta), in sola lettura: il testo non viene mai aperto e nessuna email
+  viene segnata come letta, spostata o cancellata.
+
+Cosa resta sul computer
+- Archivio con mittenti, oggetti e date delle email lette, note e impostazioni: ~/.local/share/tk-iscrizioni
+- Le password delle caselle stanno nel portachiavi del sistema («Password e chiavi»), mai in chiaro su disco.
+- Aggiornamenti: tk-iscrizioni sostituisce da solo il file AppImage con la versione nuova (firmata).
+- Per togliere tutto: cancella il file AppImage (la voce del menu sparisce), la cartella
+  ~/.local/share/tk-iscrizioni e, in «Password e chiavi», le voci «tk-iscrizioni».
+
+Cosa va in rete
+- Il tuo fornitore di posta, per leggere le intestazioni.
+- pietrodefilippis.it: aggiornamenti; configurazione dell'accesso a Outlook (solo per le caselle
+  Outlook/Hotmail); statistiche anonime solo se le permetti (si cambiano in Informazioni).
+- I siti dei mittenti, solo quando premi «Disiscriviti».
+
+Licenza
+tk-iscrizioni è software libero: GNU Affero General Public License v3.0 (AGPL-3.0), senza alcuna garanzia.
+Tutte le funzioni per tutti; una donazione è libera e non sblocca nulla.
+Codice sorgente: https://github.com/tecnikgeek-repo/tk-iscrizioni-desktop
+Licenze dei componenti (Python, Qt, secretstorage…): nel programma, Informazioni → Licenze e codice sorgente.
+Il nome tk-iscrizioni e il logo non sono coperti dalla licenza (AGPL sez. 7): una versione modificata deve
+avere un nome diverso.
+
+Creato da TecnikGeek — https://pietrodefilippis.it

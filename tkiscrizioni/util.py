@@ -1,12 +1,20 @@
+"""Percorsi, impostazioni e piccole utilità di sistema (Windows, Mac e Linux)."""
 import json
 import os
 import sys
 
 from tkiscrizioni import APP_TITLE, LEGACY_TITLE, VERSION
+from tkiscrizioni import tk_linux  # libreria comune dei software TK (su Windows e Mac non fa niente)
 
 APP_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IS_MAC = sys.platform == "darwin"
 IS_WIN = sys.platform == "win32"
+IS_LINUX = sys.platform.startswith("linux")
+
+# dove stanno le password, per i testi dell'interfaccia
+VAULT_NAME = ("Gestione credenziali di Windows" if IS_WIN else "Portachiavi del Mac" if IS_MAC
+              else tk_linux.NOME_PORTACHIAVI)
+LINUX_DESKTOP_ID = "tk-iscrizioni"  # nome del file .desktop = app_id della finestra su Wayland (icona nella barra)
 
 
 def mac_bundle_path():
@@ -18,9 +26,12 @@ def mac_bundle_path():
 
 
 def is_installed():
-    """True se gira dal pacchetto portatile (Windows: cartella «app» con il Python incluso; Mac: bundle .app)."""
+    """True se gira dal pacchetto portatile (Windows: cartella «app» con il Python incluso; Mac: bundle .app;
+    Linux: file AppImage)."""
     if IS_MAC:
         return bool(getattr(sys, "frozen", False) and mac_bundle_path())
+    if IS_LINUX:
+        return bool(tk_linux.appimage_path())
     bundled = os.path.join(APP_ROOT, "python")
     return os.path.isfile(os.path.join(bundled, "pythonw.exe")) and \
         os.path.normcase(os.path.abspath(sys.base_prefix)) == os.path.normcase(bundled)
@@ -39,12 +50,14 @@ def _writable_dir(path):
 
 def data_dir():
     """Archivio e impostazioni. Windows: «Dati» accanto ad «app» (portatile). Mac: Application Support.
-    Gli aggiornamenti non la toccano. TKISCR_DATA la sostituisce (test).
+    Linux: ~/.local/share/tk-iscrizioni. Gli aggiornamenti non la toccano. TKISCR_DATA la sostituisce (test).
     Su Mac la cartella tiene il nome storico (LEGACY_TITLE): cambiarlo farebbe sparire l'archivio."""
     if os.environ.get("TKISCR_DATA"):
         path = os.environ["TKISCR_DATA"]
     elif IS_MAC:
         path = os.path.join(os.path.expanduser("~"), "Library", "Application Support", LEGACY_TITLE)
+    elif IS_LINUX:
+        path = tk_linux.cartella_dati(APP_TITLE)
     else:
         base = os.path.dirname(APP_ROOT) if is_installed() else APP_ROOT
         path = os.path.join(base, "Dati")
@@ -60,7 +73,7 @@ def log_dir():
 
 def cartella_licenze():
     """Cartella «licenze» del pacchetto: Windows accanto a run.py (cartella «app»), Mac in
-    Contents/Resources/licenze; da sorgente quella del repo (senza COMPONENTI.txt, lo scrive la build)."""
+    Contents/Resources/licenze, Linux dentro l'AppImage (_internal/licenze); da sorgente quella del repo (senza COMPONENTI.txt, lo scrive la build)."""
     candidati = [os.path.join(APP_ROOT, "licenze")]
     if getattr(sys, "_MEIPASS", None):
         candidati.append(os.path.join(sys._MEIPASS, "licenze"))
@@ -76,7 +89,26 @@ def cartella_licenze():
 def export_dir():
     """Dove proporre il salvataggio delle esportazioni."""
     docs = os.path.join(os.path.expanduser("~"), "Documents")
+    if IS_LINUX:
+        docs = cartella_documenti_linux() or docs
     return docs if os.path.isdir(docs) else os.path.expanduser("~")
+
+
+def cartella_documenti_linux():
+    """Linux: la cartella Documenti dell'utente col nome della sua lingua («Documenti» in italiano), da
+    ~/.config/user-dirs.dirs (lo stesso file che legge xdg-user-dir). Vuoto se non c'è."""
+    home = os.path.expanduser("~")
+    conf = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(home, ".config"), "user-dirs.dirs")
+    try:
+        with open(conf, encoding="utf-8") as fh:
+            for riga in fh:
+                riga = riga.strip()
+                if riga.startswith("XDG_DOCUMENTS_DIR="):
+                    valore = riga.split("=", 1)[1].strip().strip('"').replace("$HOME", home)
+                    return valore if os.path.isdir(valore) and valore.rstrip("/") != home else ""
+    except OSError:
+        pass
+    return ""
 
 
 def open_path(path):
@@ -86,7 +118,17 @@ def open_path(path):
     elif IS_MAC:
         subprocess.Popen(["open", path])
     else:
-        subprocess.Popen(["xdg-open", path])
+        tk_linux.apri(path)  # xdg-open con l'ambiente pulito (senza le librerie del pacchetto)
+
+
+def install_linux_menu():
+    """Linux: voce «tk-iscrizioni» nel menu delle applicazioni con l'icona (si corregge da sola se l'AppImage
+    viene spostato, sparisce se viene cancellato)."""
+    icon = os.path.join(getattr(sys, "_MEIPASS", APP_ROOT), "assets", "tk-iscrizioni-512.png")
+    return tk_linux.installa_menu(LINUX_DESKTOP_ID, APP_TITLE,
+                                  "A cosa sei iscritto con la tua email (TecnikGeek)", "Office;Network;Email;", icon,
+                                  nome_generico="Iscrizioni email",
+                                  parole="email;posta;newsletter;iscrizioni;disiscrizione;account;")
 
 
 def human_size(n):

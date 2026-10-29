@@ -8,6 +8,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "tests"))
 os.environ["TKISCR_DATA"] = tempfile.mkdtemp(prefix="tkiscr-test-")
+os.environ["TKISCR_VAULT_SERVICE"] = "tk-iscrizioni-test"  # Linux: portachiavi, voci di prova (mai quelle vere)
 
 import fake_imap  # noqa: E402
 from tkiscrizioni import classify, mailscan, vault  # noqa: E402
@@ -80,11 +81,32 @@ except ConnectionError as e:
 
 vault.set_secret("pietro@esempio-ditta.it", "pàssword segreta")
 check(vault.get_secret("pietro@esempio-ditta.it") == "pàssword segreta", "password cifrata e riletta")
-if sys.platform != "darwin":   # su Mac la password sta nel Portachiavi, non in un file
-    raw = open(os.path.join(os.environ["TKISCR_DATA"], "credenziali.json"), encoding="utf-8").read()
+CRED = os.path.join(os.environ["TKISCR_DATA"], "credenziali.json")
+if sys.platform == "win32":   # su Mac e Linux la password sta nel portachiavi, non in un file
+    raw = open(CRED, encoding="utf-8").read()
     check("segreta" not in raw, "nel file la password non è in chiaro")
+elif sys.platform.startswith("linux"):
+    check(not os.path.exists(CRED) or "pietro@" not in open(CRED, encoding="utf-8").read(),
+          "Linux: password nel portachiavi, non nel file")
 vault.delete_secret("pietro@esempio-ditta.it")
 check(vault.get_secret("pietro@esempio-ditta.it") is None, "password cancellata")
+
+if sys.platform.startswith("linux"):
+    import base64 as _b64  # noqa: E402
+    import json as _json  # noqa: E402
+    lungo = _json.dumps({"access_token": "é" * 5000, "refresh_token": "r" * 3000})
+    vault.set_secret("o@x.it", lungo)
+    check(vault.get_secret("o@x.it") == lungo, "Linux: token lungo di Outlook in una voce sola del portachiavi")
+    vault.delete_secret("o@x.it")
+    # password salvate nel file dalle versioni avviate dai sorgenti: passano nel portachiavi alla prima lettura
+    with open(CRED, "w", encoding="utf-8") as fh:
+        _json.dump({"v@x.it": "b64:" + _b64.b64encode("vècchia".encode()).decode()}, fh)
+    check(vault.get_secret("v@x.it") == "vècchia", "Linux: password vecchia del file riletta")
+    check("v@x.it" not in open(CRED, encoding="utf-8").read(), "Linux: password vecchia tolta dal file")
+    check(vault.get_secret("v@x.it") == "vècchia", "Linux: password vecchia ora nel portachiavi")
+    vault.delete_secret("v@x.it")
+    check(vault.get_secret("v@x.it") is None, "Linux: voce di prova cancellata")
+    vault.purge_service()
 
 for s, exp_f in (("Il tuo codice di verifica: 482913", classify.F_SECURITY),
                  ("Welcome to Canva", classify.F_ACCOUNT),

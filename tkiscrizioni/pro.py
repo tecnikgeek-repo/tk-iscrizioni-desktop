@@ -17,6 +17,9 @@ def crea_licenza(versione):
             base = os.environ["TKISCR_DATA"]
         elif sys.platform == "darwin":
             base = os.path.expanduser("~/Library/Application Support")
+        elif sys.platform.startswith("linux"):
+            from tkiscrizioni import tk_linux
+            base = tk_linux.xdg_data_home()  # ~/.local/share/tk-iscrizioni, la stessa cartella dei dati
         else:
             base = os.environ.get("APPDATA") or os.path.expanduser("~")
         return Licenza("tk-iscrizioni", versione, os.path.join(base, "tk-iscrizioni"))
