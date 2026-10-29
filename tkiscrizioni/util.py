@@ -126,7 +126,7 @@ def install_linux_menu():
     viene spostato, sparisce se viene cancellato)."""
     icon = os.path.join(getattr(sys, "_MEIPASS", APP_ROOT), "assets", "tk-iscrizioni-512.png")
     return tk_linux.installa_menu(LINUX_DESKTOP_ID, APP_TITLE,
-                                  "A cosa sei iscritto con la tua email (TecnikGeek)", "Office;Network;Email;", icon,
+                                  "A cosa sei iscritto con la tua email (TecnikGeek)", "Network;Email;", icon,
                                   nome_generico="Iscrizioni email",
                                   parole="email;posta;newsletter;iscrizioni;disiscrizione;account;")
 

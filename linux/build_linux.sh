@@ -70,7 +70,7 @@ Comment=A cosa sei iscritto con la tua email (TecnikGeek)
 Exec=tk-iscrizioni %U
 Icon=tk-iscrizioni
 Terminal=false
-Categories=Office;Network;Email;
+Categories=Network;Email;
 StartupWMClass=tk-iscrizioni
 EOF
 cp assets/tk-iscrizioni-512.png "$APPDIR/tk-iscrizioni.png"
