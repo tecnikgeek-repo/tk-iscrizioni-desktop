@@ -8,8 +8,7 @@ import time
 import urllib.parse
 
 from PySide6.QtCore import (
-    QAbstractTableModel, QModelIndex, QObject, QPointF, QRectF, QSize, QSortFilterProxyModel, Qt, QThread, QTimer, QUrl,
-    Signal, Slot,
+    QAbstractTableModel, QModelIndex, QPointF, QRectF, QSize, QSortFilterProxyModel, Qt, QThread, QTimer, QUrl, Signal,
 )
 from PySide6.QtGui import (
     QBrush, QColor, QDesktopServices, QFont, QIcon, QImage, QLinearGradient, QPainter, QPainterPath, QPen, QPixmap,
@@ -26,7 +25,6 @@ from tkiscrizioni import (
 )
 from tkiscrizioni.store import Store
 from tkiscrizioni.tk_licenza_qt import dentro_lo_schermo
-from tkiscrizioni import tk_linux
 from tkiscrizioni.util import (
     IS_LINUX, IS_WIN, VAULT_NAME, Settings, cartella_licenze, create_desktop_shortcut, data_dir, ensure_folder_shortcut, export_dir,
     human_size, is_installed, log_dir,
@@ -292,16 +290,6 @@ def fmt_date(ts, with_time=False):
 
 def open_url(url):
     QDesktopServices.openUrl(QUrl(url))
-
-
-class _ApriConIlSistema(QObject):
-    """Linux: i link (browser, posta, cartelle) si aprono con xdg-open con l'ambiente pulito. Qt passerebbe al
-    browser le variabili del pacchetto (librerie Qt incluse) e il browser potrebbe non partire. Vale per tutte le
-    chiamate a QDesktopServices.openUrl, anche quelle della libreria comune (Informazioni, caffè)."""
-
-    @Slot(QUrl)
-    def apri(self, url):
-        tk_linux.apri(url.toString())
 
 
 def _salva_password(dialog, email, segreto):
@@ -1913,9 +1901,8 @@ def main():
     if IS_LINUX:
         from tkiscrizioni.util import LINUX_DESKTOP_ID
         app.setDesktopFileName(LINUX_DESKTOP_ID)  # Wayland: la barra delle applicazioni trova l'icona dal .desktop
-        app.apri_link = _ApriConIlSistema(app)
-        for schema in ("http", "https", "mailto", "file"):
-            QDesktopServices.setUrlHandler(schema, app.apri_link, "apri")
+        from tkiscrizioni.tk_linux_qt import instrada_link
+        instrada_link(app)  # i link si aprono con l'ambiente del sistema, non con quello del pacchetto
     app.setStyle("Fusion")
     from tkiscrizioni.tk_licenza_qt import stile_caselle_globale
     app.setStyleSheet(STYLE + stile_caselle_globale())

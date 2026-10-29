@@ -90,25 +90,8 @@ def export_dir():
     """Dove proporre il salvataggio delle esportazioni."""
     docs = os.path.join(os.path.expanduser("~"), "Documents")
     if IS_LINUX:
-        docs = cartella_documenti_linux() or docs
+        docs = tk_linux.cartella_utente("DOCUMENTS") or docs  # «Documenti» nella lingua dell'utente
     return docs if os.path.isdir(docs) else os.path.expanduser("~")
-
-
-def cartella_documenti_linux():
-    """Linux: la cartella Documenti dell'utente col nome della sua lingua («Documenti» in italiano), da
-    ~/.config/user-dirs.dirs (lo stesso file che legge xdg-user-dir). Vuoto se non c'è."""
-    home = os.path.expanduser("~")
-    conf = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.join(home, ".config"), "user-dirs.dirs")
-    try:
-        with open(conf, encoding="utf-8") as fh:
-            for riga in fh:
-                riga = riga.strip()
-                if riga.startswith("XDG_DOCUMENTS_DIR="):
-                    valore = riga.split("=", 1)[1].strip().strip('"').replace("$HOME", home)
-                    return valore if os.path.isdir(valore) and valore.rstrip("/") != home else ""
-    except OSError:
-        pass
-    return ""
 
 
 def open_path(path):
