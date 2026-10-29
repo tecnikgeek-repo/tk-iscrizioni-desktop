@@ -209,8 +209,8 @@ def finto_security(cmd, input=None, **kw):
     raise AssertionError(cmd)
 
 
-vero_run, vero_mac = vault.subprocess.run, vault.IS_MAC
-vault.subprocess.run, vault.IS_MAC = finto_security, True
+vero_run, vero_mac, vero_linux = vault.subprocess.run, vault.IS_MAC, vault.IS_LINUX
+vault.subprocess.run, vault.IS_MAC, vault.IS_LINUX = finto_security, True, False
 try:
     lungo = "token-outlook-" + "é" * 3000
     vault.set_secret("m@x.it", lungo)
@@ -230,7 +230,7 @@ try:
     except ValueError:
         check(True, "Mac: casella con virgolette rifiutata")
 finally:
-    vault.subprocess.run, vault.IS_MAC = vero_run, vero_mac
+    vault.subprocess.run, vault.IS_MAC, vault.IS_LINUX = vero_run, vero_mac, vero_linux
 
 srv.shutdown()
 print("\n" + ("TUTTO OK" if not fails else f"{len(fails)} TEST FALLITI"))
