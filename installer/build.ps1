@@ -7,6 +7,11 @@ $stageRoot = Join-Path $env:TEMP 'tkiscrizioni-stage'
 $stage = Join-Path $stageRoot 'app'
 $dist = Join-Path $root 'dist'
 $venv = Join-Path $root '.venv'
+
+# Smart App Control blocca .venv\Scripts\python.exe (lanciatore non firmato): Python di base + librerie del venv,
+# PYTHONPATH solo per la durata della chiamata (il collaudo del pacchetto non deve vedere le librerie del venv)
+$venvPy = ((Get-Content (Join-Path $venv 'pyvenv.cfg') | Where-Object { $_ -match '^home\s*=' }) -replace '^home\s*=\s*', '').Trim() + '\python.exe'
+function VenvPy { $env:PYTHONPATH = Join-Path $venv 'Lib\site-packages'; try { & $venvPy @args } finally { Remove-Item Env:PYTHONPATH -ErrorAction SilentlyContinue } }
 Write-Host "== tk-iscrizioni ${version}"
 if (Test-Path $stageRoot) { Remove-Item $stageRoot -Recurse -Force }
 New-Item -ItemType Directory -Force $stage | Out-Null
@@ -18,7 +23,7 @@ function Robo($src, $dst, [string[]]$extra) {
 }
 
 # icona
-& "$venv\Scripts\python.exe" tools_make_icon.py | Out-Null
+VenvPy tools_make_icon.py | Out-Null
 if (-not (Test-Path 'assets\tk-iscrizioni.ico')) { throw 'Icona non generata' }
 
 # Python ridotto (senza tkinter, test, pip...) + solo le parti di PySide6 che servono
@@ -58,7 +63,7 @@ New-Item -ItemType Directory -Force "$stage\assets" | Out-Null
 Copy-Item 'assets\tk-iscrizioni.ico' "$stage\assets\"
 Copy-Item 'run.py' $stage
 # testi delle licenze (AGPL + componenti inclusi + COMPONENTI.txt) in app\licenze, accanto a run.py
-& "$venv\Scripts\python.exe" tools_licenze.py "$stage\licenze" windows | Out-Null
+VenvPy tools_licenze.py "$stage\licenze" windows | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Cartella licenze non preparata' }
 foreach ($f in @('COPYING-AGPL-3.0.txt', 'COMPONENTI.txt', 'LGPL-3.0.txt', 'GPL-3.0.txt', 'MPL-2.0.txt', 'Python-PSF.txt')) {
     if (-not (Test-Path "$stage\licenze\$f")) { throw "Manca licenze\$f" }
