@@ -6,7 +6,7 @@ APP_TITLE = "tk-iscrizioni"
 # Portachiavi e della cifratura DPAPI, così archivio e password salvate restano leggibili. Non cambiarlo.
 # (Su Linux, arrivato dopo, si usa ovunque il nome nuovo.)
 LEGACY_TITLE = "tkISCRIZIONI"
-VERSION = "1.1.6"
+VERSION = "1.1.7"
 AUTHOR = "TecnikGeek"
 AUTHOR_URL = "https://pietrodefilippis.it"
 TERMS_URL = "https://pietrodefilippis.it/termini-e-condizioni/#software"
