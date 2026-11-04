@@ -1,4 +1,5 @@
 """Finestra principale di tk-iscrizioni: caselle e filtri a sinistra, servizi al centro, dettaglio a destra."""
+from tkiscrizioni.errori import frase_errore, motivo_errore
 import csv
 import html
 import json
@@ -298,7 +299,7 @@ def _salva_password(dialog, email, segreto):
         vault.set_secret(email, segreto)
         return True
     except (OSError, ValueError) as exc:
-        dialog._fail(f"Non riesco a salvare la password nel {VAULT_NAME}: {exc}")
+        dialog._fail(frase_errore(f"Non riesco a salvare la password nel {VAULT_NAME}.", exc))
         return False
 
 
@@ -532,7 +533,7 @@ class Worker(QThread):
         try:
             self.done.emit(self.fn())
         except Exception as exc:
-            self.failed.emit(str(exc) or exc.__class__.__name__)
+            self.failed.emit(motivo_errore(exc))
 
 
 class DownloadThread(QThread):
@@ -556,7 +557,7 @@ class DownloadThread(QThread):
         except InterruptedError:
             self.failed.emit("")
         except Exception as exc:
-            self.failed.emit(str(exc))
+            self.failed.emit(motivo_errore(exc))
 
 
 def account_secret(acc):
@@ -614,11 +615,11 @@ class ScanThread(QThread):
                 report.append((acc["email"], None, 0))
                 break
             except mailscan.AuthError as e:
-                msg = "accesso rifiutato: " + str(e)
+                msg = "accesso rifiutato: " + motivo_errore(e)
                 self.store.set_scan(acc["id"], acc.get("last_scan") or 0, msg)
                 report.append((acc["email"], False, msg))
             except Exception as e:
-                msg = str(e) or e.__class__.__name__
+                msg = motivo_errore(e)
                 self.store.set_scan(acc["id"], acc.get("last_scan") or 0, msg)
                 report.append((acc["email"], False, msg))
         self.finished_all.emit(report)
@@ -1728,7 +1729,7 @@ class MainWindow(QMainWindow):
         try:
             path = create_desktop_shortcut()
         except Exception as exc:
-            tk_warn(self, APP_TITLE, f"Non riesco a creare l'icona sul Desktop:\n{exc}")
+            tk_warn(self, APP_TITLE, frase_errore("Non riesco a creare l'icona sul Desktop.", exc))
             return
         tk_info(self, APP_TITLE, f"Icona creata sul Desktop:\n{path}", "ok")
 
@@ -1808,7 +1809,7 @@ class MainWindow(QMainWindow):
                 updater.apply_update(path, new_version=str(self.manifest["version"]))
             except Exception as exc:
                 prog.close()
-                tk_warn(self, APP_TITLE, f"Aggiornamento non riuscito:\n{exc}")
+                tk_warn(self, APP_TITLE, frase_errore("Aggiornamento non riuscito.", exc))
                 return
             self.closing_for_update = True
             QTimer.singleShot(300, QApplication.instance().quit)

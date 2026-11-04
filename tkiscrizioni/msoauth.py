@@ -42,7 +42,7 @@ def _post(url, data, timeout=30):
             body = json.loads(e.read().decode())
         except Exception:
             body = {}
-        raise RuntimeError(body.get("error_description", "").split("\r\n")[0] or f"errore {e.code} da Microsoft")
+        raise RuntimeError("Microsoft non ha concesso l'accesso: riprova.") from e
 
 
 def config(timeout=10):

@@ -20,7 +20,13 @@ _SKIP_NAMES = re.compile(r"(^|/|\.)(sent|inviat|bozze|draft|cestino|trash|delete
 _LIST_RX = re.compile(r'\((?P<flags>[^)]*)\)\s+(?P<delim>"(?:[^"\\]|\\.)*"|NIL)\s+(?P<name>.+)$')
 
 
+class ErroreCasella(ConnectionError):
+    leggibile = True
+
+
 class AuthError(Exception):
+    leggibile = True
+
     pass
 
 
@@ -62,13 +68,13 @@ def connect(host, port, user, secret, auth="password", timeout=45):
         else:
             im = imaplib.IMAP4_SSL(host, int(port), ssl_context=_ctx(), timeout=timeout)
     except socket.gaierror:
-        raise ConnectionError(f"il server «{host}» non esiste: controlla il nome")
+        raise ErroreCasella(f"il server «{host}» non esiste: controlla il nome")
     except (socket.timeout, TimeoutError):
-        raise ConnectionError(f"il server «{host}» non risponde (porta {port})")
+        raise ErroreCasella(f"il server «{host}» non risponde (porta {port})")
     except ssl.SSLError as e:
-        raise ConnectionError(f"connessione sicura non riuscita con «{host}»: {e.reason or e}")
+        raise ErroreCasella(f"connessione sicura non riuscita con «{host}»")
     except OSError as e:
-        raise ConnectionError(f"non riesco a collegarmi a «{host}»: {e.strerror or e}")
+        raise ErroreCasella(f"non riesco a collegarmi a «{host}»: controlla la connessione")
     try:
         if auth == "oauth_ms":
             im.authenticate("XOAUTH2", lambda _: f"user={user}\x01auth=Bearer {secret}\x01\x01".encode())
@@ -81,8 +87,7 @@ def connect(host, port, user, secret, auth="password", timeout=45):
             im.shutdown()
         except Exception:
             pass
-        msg = re.sub(r"^\[[A-Z-]+\]\s*", "", str(e).strip("b'\"")).strip()
-        raise AuthError(msg or "credenziali non valide")
+        raise AuthError("credenziali non valide") from e
     return im
 
 
